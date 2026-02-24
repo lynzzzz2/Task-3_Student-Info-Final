@@ -1,1 +1,101 @@
+package org.example;
 
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+public class Repository {
+
+    private static final String DB_URL = "jdbc:sqlite:C:/Users/QC SDO/IdeaProjects/MainPrac1/MainPrac1.db";
+
+    // Constructor: create table if it doesn't exist
+    public Repository() {
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement()) {
+
+            String sql = """
+                    CREATE TABLE IF NOT EXISTS MainPrac1 (
+                        studentNumber INTEGER PRIMARY KEY,
+                        firstName TEXT,
+                        middleInitial TEXT,
+                        lastName TEXT,
+                        age INTEGER,
+                        course TEXT,
+                        section INTEGER,
+                        address TEXT,
+                        phoneNumber TEXT,
+                        isEnrolled BOOLEAN
+                    )
+                    """;
+
+            stmt.execute(sql);
+
+        } catch (SQLException e) {
+            System.out.println("Error creating table: " + e.getMessage());
+        }
+    }
+
+    // Add student to database
+    public void addStudent(Student student) {
+        String sql = """
+                INSERT INTO MainPrac1 (
+                    studentNumber, firstName, middleInitial, lastName,
+                    age, course, section, address, phoneNumber, isEnrolled
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setInt(1, student.getStudentNumber());
+            pstmt.setString(2, student.getFirstName());
+            pstmt.setString(3, student.getMiddleInitial());
+            pstmt.setString(4, student.getLastName());
+            pstmt.setInt(5, student.getAge());
+            pstmt.setString(6, student.getCourse());
+            pstmt.setInt(7, student.getSection());
+            pstmt.setString(8, student.getAddress());
+            pstmt.setString(9, student.getPhoneNumber());
+            pstmt.setBoolean(10, student.isEnrolled());
+
+            pstmt.executeUpdate();
+            System.out.println("Student added successfully!");
+
+        } catch (SQLException e) {
+            System.out.println("Error adding student: " + e.getMessage());
+        }
+    }
+
+    // Get all students from database
+    public List<Student> getAllStudents() {
+        List<Student> students = new ArrayList<>();
+        String sql = "SELECT * FROM MainPrac1";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                Student student = new Student.Builder()
+                        .setStudentNumber(rs.getInt("studentNumber"))
+                        .setFirstName(rs.getString("firstName"))
+                        .setMiddleInitial(rs.getString("middleInitial"))
+                        .setLastName(rs.getString("lastName"))
+                        .setAge(rs.getInt("age"))
+                        .setCourse(rs.getString("course"))
+                        .setSection(rs.getInt("section"))
+                        .setAddress(rs.getString("address"))
+                        .setPhoneNumber(rs.getString("phoneNumber"))
+                        .setIsEnrolled(rs.getBoolean("isEnrolled"))
+                        .build();
+
+                students.add(student);
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Error fetching students: " + e.getMessage());
+        }
+
+        return students;
+    }
+}
