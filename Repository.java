@@ -8,7 +8,6 @@ public class Repository {
 
     private static final String DB_URL = "jdbc:sqlite:C:/Users/QC SDO/IdeaProjects/MainPrac1/MainPrac1.db";
 
-    // Constructor: create table if it doesn't exist
     public Repository() {
         try (Connection conn = DriverManager.getConnection(DB_URL);
              Statement stmt = conn.createStatement()) {
@@ -35,7 +34,6 @@ public class Repository {
         }
     }
 
-    // Add student to database
     public void addStudent(Student student) {
         String sql = """
                 INSERT INTO MainPrac1 (
